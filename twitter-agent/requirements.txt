@@ -1,0 +1,7 @@
+tweepy
+python-dotenv
+apscheduler
+requests
+beautifulsoup4
+twilio
+langchain
