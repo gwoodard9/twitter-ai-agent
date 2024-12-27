@@ -26,10 +26,10 @@ def scrape_xrp_news(url):
 
     for title in titles:
         title_text = title.get_text(strip=True)
-        if "XRP" in title_text:
+        if "Bitcoin" in title_text:
             filtered_title_text.append(title_text)
             break
-
+        
     if not filtered_title_text:
         print("No titles found with 'XRP'.")
         return "No relevant news found."
@@ -40,7 +40,11 @@ result = scrape_xrp_news(url)
 
 client_openai = ChatOpenAI(model="gpt-4", openai_api_key=os.getenv("OPENAI_API_KEY"))
 
+tweet_content =  None
+
 def write_tweet(filtered_title_text):
+    global tweet_content
+
     if filtered_title_text == "No relevant news found.":
         print("No news found to tweet.")
         return None    
@@ -55,6 +59,7 @@ def write_tweet(filtered_title_text):
             temperature=0.7 
         ) 
         tweet_content = completion.choices[0].message.content.strip()
+
         print(completion.choices[0].message.content)
         return tweet_content
     
@@ -81,20 +86,19 @@ def send_text(tweet_content):
         print(f"Error sending message: {e}")
         return None
 
-tweet_content = None
-
 @app.route("/incoming_sms", methods=["POST"])
 def incoming_sms():
+    response = request.form.get('Body', '')
     global tweet_content
-    response = MessagingResponse()
+    msg = MessagingResponse()
 
-    if response.lower() == 'yes':
+    if response.strip().lower() == 'yes':
         post_tweet(tweet_content)
-        response.message("Tweet approved and posted!")
-    elif response.lower() == 'no':
-        response.message("Tweet rejected.")
+        msg.message("Tweet approved and posted!")
+    elif response.strip().lower() == 'no':
+        msg.message("Tweet rejected.")
 
-    return str(response)
+    return str(msg)
 
 @app.route("/run_code", methods=["POST"])
 def run_code():
@@ -120,22 +124,18 @@ access_token_secret = os.getenv('ACCESS_TOKEN_SECRET')
 twitter_bearer_token = os.getenv('TWITTER_BEARER_TOKEN')
 
 def post_tweet(tweet_content):
-    tweet_content
+
     twitter_client = tweepy.Client(
-        consumer_key=consumer_key,
-        consumer_secret=consumer_secret,
-        access_token=access_token,
-        access_token_secret=access_token_secret
-    )
-    
+    consumer_key=consumer_key,
+    consumer_secret=consumer_secret,
+    access_token=access_token,
+    access_token_secret=access_token_secret
+)
     try:
         response = twitter_client.create_tweet(text=tweet_content)
-        print(f"Tweet successfully posted: {response.data['text']}")
-    except tweepy.errors.TooManyRequests as e:
-        print(f"Rate limit exceeded. Retry after some time: {e}")
-        time.sleep(10)
+        print(f"Tweet posted successfully: {response.data}")
     except Exception as e:
-        print(f"Error posting tweet: {e}")
+        print(f"An error occurred while posting the tweet: {str(e)}")
 
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()
