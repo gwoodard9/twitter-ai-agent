@@ -26,7 +26,7 @@ def scrape_xrp_news(url):
 
     for title in titles:
         title_text = title.get_text(strip=True)
-        if "Bitcoin" in title_text:
+        if "XRP" in title_text:
             filtered_title_text.append(title_text)
             break
 
