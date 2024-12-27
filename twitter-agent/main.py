@@ -6,6 +6,7 @@ import requests, time, os, tweepy, openai
 from twilio.rest import Client
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
@@ -106,6 +107,12 @@ def run_code():
     send_text(tweet_content)
     return str('good')
 
+def call_run_code():
+    try:
+        requests.post("http://127.0.0.1:5000/run_code")
+    except Exception as e:
+        print(f"Error calling /run_code: {e}")
+
 consumer_key = os.getenv('CONSUMER_KEY')
 consumer_secret = os.getenv('CONSUMER_SECRET')
 access_token = os.getenv('ACCESS_TOKEN')
@@ -131,4 +138,7 @@ def post_tweet(tweet_content):
         print(f"Error posting tweet: {e}")
 
 if __name__ == "__main__":
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(call_run_code, 'interval', hours=6)
+    scheduler.start()
     app.run(debug=True)
