@@ -86,8 +86,3 @@ python main.py
 2. The server will run on http://localhost:5000. Open Ngrok to expose the server to the internet. Use the Ngrok URL for setting up webhooks in Twilio and Twitter.
 
 3. The agent will fetch XRP updates and generate tweets every hour. It will send an SMS to the Twilio number for user approval before posting.
-
-## Contributing
-
-Feel free to fork this repository and submit pull requests for improvements or fixes. Please ensure your code follows the project’s style and is well-tested.
-
